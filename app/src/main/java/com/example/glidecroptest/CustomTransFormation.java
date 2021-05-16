@@ -36,17 +36,13 @@ import java.util.concurrent.locks.ReentrantLock;
 
 // extends BitmapTransformation
 public class CustomTransFormation {
-    private final int id;
     private String TAG = CustomTransFormation.class.getSimpleName();
-    private String filePath;
     //캐시에 사용 됨
     private final Context context;
 
 
     private static final String ID = "com.bumptech.glide.load.resource.bitmap.CenterCrop";
-    String STRING_CHARSET_NAME = "UTF-8";
-    Charset CHARSET = Charset.forName(STRING_CHARSET_NAME);
-    //dither: 잡음 방지 , FILTER_BITMAP_FLAG: 샘플링 가능
+    //DITHER_FLAG: 잡음 방지 , FILTER_BITMAP_FLAG: 샘플링 가능
     public static final int PAINT_FLAGS = Paint.DITHER_FLAG | Paint.FILTER_BITMAP_FLAG;
     private static final Paint DEFAULT_PAINT = new Paint(PAINT_FLAGS);
     // See #738.
@@ -95,12 +91,10 @@ public class CustomTransFormation {
     private final float overrideH;
     public RequestBuilder<Bitmap> requestBuilder;
 
-    //
-    public CustomTransFormation(Context context, int id, float viewW, float viewH, RectF cropRectF,
-                                float width, float height, boolean isCloud) {
+    public CustomTransFormation(Context context, int id, float viewW, float viewH, RectF cropRectF, float width, float height, boolean isCloud) {
+//    public CustomTransFormation(Context context, String filePath, float viewW, float viewH, RectF cropRectF, float width, float height, boolean isCloud) {
         this.context = context;
-//        this.filePath = FilePath;
-        this.id = id;
+//        this.id = id;
         float cropX = cropRectF.left;
         float cropY = cropRectF.top;
         float cropW = cropRectF.width();
@@ -143,22 +137,24 @@ public class CustomTransFormation {
 
         overrideW = cropViewL + cropViewW + cropViewR;
         overrideH = cropViewT + cropViewH + cropViewB;
-        Log.d("TAG", "");
-
+        
+        requestBuilder = Glide.with(this.context).asBitmap().load(id).override((int) overrideW, (int) overrideH).signature(new ObjectKey(id));
+        /*
         if (!isCloud) {
-            requestBuilder = Glide.with(this.context).asBitmap().load(id).override((int) overrideW, (int) overrideH).signature(new ObjectKey(id));
+
             //파일 경로 읽을 시 파일 수정정보를 통해 캐시
-            /*Cursor cursor = ContentResolverUtil.getImageCursor(this.context, filePath);
+            Cursor cursor = ContentResolverUtil.getImageCursor(this.context, filePath);
             String modified = "";
             if (cursor != null && cursor.moveToNext()) {
                 modified = cursor.getString(cursor.getColumnIndex(MediaStore.Images.Media.DATE_MODIFIED));
-                requestBuilder = Glide.with(this.context).asBitmap().load(id).override((int) overrideW, (int) overrideH).signature(new ObjectKey(filePath + modified));
+                requestBuilder = Glide.with(this.context).asBitmap().load(filePath).override((int) overrideW, (int) overrideH).signature(new ObjectKey(filePath + modified));
             } else {
-                requestBuilder = Glide.with(this.context).asBitmap().load(id).override((int) overrideW, (int) overrideH).signature(new ObjectKey(System.currentTimeMillis()));
-            }*/
+                requestBuilder = Glide.with(this.context).asBitmap().load(filePath).override((int) overrideW, (int) overrideH).signature(new ObjectKey(System.currentTimeMillis()));
+            }
         } else {
-            requestBuilder = Glide.with(this.context).asBitmap().load(id).override((int) overrideW, (int) overrideH).signature(new ObjectKey(filePath));
+            requestBuilder = Glide.with(this.context).asBitmap().load(filePath).override((int) overrideW, (int) overrideH).signature(new ObjectKey(filePath));
         }
+        */
     }
 
     public interface BitmapCallback {
@@ -201,7 +197,6 @@ public class CustomTransFormation {
 
     //자동 호출이 안된다.
     protected Bitmap transform_(@NonNull BitmapPool pool, @NonNull Bitmap inBitmap, int ivW, int ivH) {
-        Log.d(TAG, filePath + "transform \t ivW:" + ivW + "\tivH" + ivH);
         Matrix m = new Matrix();
         //확대, 축소
         //x, y 축 이동
